@@ -1,0 +1,55 @@
+version: '2'
+
+networks:
+  laravel:
+
+
+services:
+
+  # The Application
+  php:
+    build:
+      context: ./
+      dockerfile: app.dockerfile
+    working_dir: /var/www
+    container_name: php
+    volumes:
+      - ./:/var/www
+    environment:
+      - "DB_PORT=3306"
+      - "DB_HOST=database"
+    networks:
+      - laravel
+
+  # The Web Server
+  nginx:
+    build:
+      context: ./
+      dockerfile: web.dockerfile
+    container_name: nginx
+    working_dir: /var/www
+    volumes_from:
+      - php
+    ports:
+      - 8082:80
+    networks:
+      - laravel
+
+  # The Database
+  mysql:
+    image: mysql:5.6
+    container_name: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      - "MYSQL_DATABASE=homestead"
+      - "MYSQL_USER=homestead"
+      - "MYSQL_PASSWORD=secret"
+      - "MYSQL_ROOT_PASSWORD=secret"
+    ports:
+        - "33061:3306"
+    networks:
+      - laravel
+
+volumes:
+  dbdata:
